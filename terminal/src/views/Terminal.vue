@@ -1,52 +1,65 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, ref } from "vue";
+import note from "../components/note.vue";
 
-const input = defineModel();
 let lastCommand = "";
+const input = defineModel();
+const notes = ref({});
 
 onMounted(() => {
     document.getElementById("input").focus();
 });
 
-function refocus(event) {
-    event.target.focus();
-}
-
-function command(a, event) {
+function command(a) {
     let sudo = false;
-    event.target.value = "";
 
-    let input = a.split(" ");
-    if (input[0] === "sudo") {
+    let input = a;
+    input = input.replace("!!", lastCommand);
+
+    if (input.startsWith("sudo")) {
         sudo = true;
-        input.splice(0, 1);
     }
-    input = input.map((arg) => {
-        if (arg === "!!") {
-            return lastCommand;
-        }
-        return arg;
-    });
 
-    a = input.join(" ");
-    lastCommand = a;
-    input = a.split(" ");
+    input = input.replace("sudo", "");
+    input = input.replace(/(\s+)/g, " ");
+    input = input.trim();
 
+    lastCommand = input;
+    input = input.split(" ");
+    let error = "";
     switch (input[0]) {
+        case "makenote":
+            // number of args
+            if (input.length - 1 !== 2) {
+                error = `bad number of arguments supplied (expected 2, got ${input.length - 1})`;
+                break;
+            }
+            if (notes.value[input[1]]) {
+                error = `a note with name ${input[1]} already exists`;
+                break;
+            }
+            notes.value[input[1]] = { name: input[1], content: input[2] };
+            break;
         case "among":
             console.log("sus");
             break;
         default:
-            console.log(`unknown command "${input[0]}"`);
+            error = `unknown command "${input[0]}"`;
             break;
     }
+    if (error) {
+        console.log(error);
+    }
+    input = "";
 }
 </script>
 
 <template>
     <div id="wrapper">
-        <div id="output"></div>
-        <input type="text" name="input" id="input" v-model="input" @blur="refocus" @keydown.enter="command(input, $event)" placeholder="enter a command" />
+        <div id="notes">
+            <note v-for="note in notes" :key="note.name" :note="note"></note>
+        </div>
+        <input type="text" name="input" id="input" v-model.trim="input" @keydown.enter="command(input)" placeholder="enter a command" />
     </div>
 </template>
 

@@ -1,12 +1,14 @@
-import { ref, computed } from 'vue'
-import { defineStore } from 'pinia'
+// what is a store and what is a pinia
 
-export const useCounterStore = defineStore('counter', () => {
-  const count = ref(0)
-  const doubleCount = computed(() => count.value * 2)
-  function increment() {
-    count.value++
-  }
+import { ref, computed } from "vue";
+import { defineStore } from "pinia";
 
-  return { count, doubleCount, increment }
-})
+export const useCounterStore = defineStore("counter", () => {
+    const count = ref(0);
+    const doubleCount = computed(() => count.value * 2);
+    function increment() {
+        count.value++;
+    }
+
+    return { count, doubleCount, increment };
+});
