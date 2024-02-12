@@ -14,16 +14,16 @@ import { defineStore } from "pinia";
 
 // https://pinia.vuejs.org/core-concepts/#Setup-Stores
 // BWUHH??
-export const useClasses = defineStore("classes", () => {
-    const classList = ref([{ name: "Liberal Class", description: "Mandatory liberal class, taught by Joe Biden" }]);
+export const useTimers = defineStore("timers", () => {
+    const timerList = ref([]);
     const unhelpfulLength = computed(() => {
-        return classList.value.length * 2;
+        return timerList.value.length * 2;
     });
     function clear() {
-        classList.value = [];
+        timerList.value = [];
     }
-    function addClass(className, classDescription) {
-        classList.push({ name: className, description: classDescription });
+    function addTimer(name, length) {
+        timerList.value.push({ name: name, length: length });
     }
-    return { classList, unhelpfulLength, clear, addClass };
+    return { timerList, unhelpfulLength, clear, addTimer };
 });
