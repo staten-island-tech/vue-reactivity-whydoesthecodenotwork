@@ -1,10 +1,10 @@
 <template>
     <div class="card" ref="cardElement" :style="{ left: posX + 'px', top: posY + 'px', zIndex: Timer.z }" @mousedown="emits('spotlight', Timer)">
-        <div class="title">
-            <h2 @input="editTextArea" @mousedown="startMove" @mousemove="extendLife">{{ title }}</h2>
+        <div class="title" :style="{ cursor: cursor }">
+            <h2 @input="editTextArea" @mousedown="startMove">{{ title }}</h2>
             <button @click="die">x</button>
         </div>
-        <textarea ref="textareaElement" @change="updateTitle"></textarea>
+        <textarea ref="textareaElement" @change="updateTitle" @input="heal"></textarea>
         <div class="timer">
             <output>{{ Timer.left }} / {{ Timer.length }}</output>
             <span class="barBackground"
@@ -36,6 +36,7 @@ let x = 0;
 let y = 0;
 const posX = ref();
 const posY = ref();
+const cursor = ref("grab");
 
 // the title of the note
 const title = ref("title");
@@ -49,6 +50,7 @@ function updateTitle(event) {
 function mouseUp() {
     console.log("BWUHH");
     emits("yeehaw", "stop");
+    cursor.value = "grab";
     window.removeEventListener("mousemove", mouseMove);
     window.removeEventListener("mouseup", mouseUp);
 }
@@ -68,14 +70,13 @@ function startMove(event) {
     emits("yeehaw", "go");
     x = event.offsetX;
     y = event.offsetY;
+    cursor.value = "grabbing";
     window.addEventListener("mousemove", mouseMove);
     window.addEventListener("mouseup", mouseUp);
 }
 
-function extendLife(event) {
-    if (event.buttons === 0) {
-        // props.Timer.left++;
-    }
+function heal() {
+    props.Timer.left++;
 }
 
 function die(x) {
@@ -103,7 +104,7 @@ onMounted(() => {
         if (timer.left > timer.length) {
             delay = Math.max(1000 - (timer.left - timer.length) * 1, 1);
         }
-        title.value = timer.z;
+        // title.value = timer.z;
         timer.left--;
         if (timer.left < 1) {
             die();
@@ -132,7 +133,6 @@ onMounted(() => {
 .card .title {
     display: flex;
     border-bottom: 2px solid rgb(0, 0, 0);
-    cursor: move;
 }
 
 .card .title h2 {

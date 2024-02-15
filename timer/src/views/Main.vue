@@ -24,8 +24,7 @@ function toggleSelect(x) {
     <div :style="{ userSelect: canSelect, webkitUserSelect: canSelect }">
         <div id="timers" v-if="unhelpfulLength > 0">
             <h1>you have (0.5*{{ unhelpfulLength }}) timers:</h1>
-            <!-- student uses ENTIRE OBJECT as key, asked to leave APCSP -->
-            <Timer v-for="Timer in timerList" :key="Timer" :Timer="Timer" @explode="explode" @yeehaw="toggleSelect" @spotlight="timers.spotlight" />
+            <Timer v-for="Timer in timerList" :key="Timer.z" :Timer="Timer" @explode="explode" @yeehaw="toggleSelect" @spotlight="timers.spotlight" />
         </div>
         <h1 v-else>you have NO timers...</h1>
         <button @click="timers.addTimer('this is name', 300)">oh man</button>
