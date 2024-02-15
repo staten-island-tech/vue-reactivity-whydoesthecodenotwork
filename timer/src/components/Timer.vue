@@ -1,5 +1,5 @@
 <template>
-    <div class="card" ref="cardElement" :style="{ left: posX + 'px', top: posY + 'px' }">
+    <div class="card" ref="cardElement" :style="{ left: posX + 'px', top: posY + 'px', zIndex: Timer.z }" @mousedown="emits('spotlight', Timer)">
         <div class="title">
             <h2 @input="editTextArea" @mousedown="startMove" @mousemove="extendLife">{{ title }}</h2>
             <button @click="die">x</button>
@@ -25,7 +25,7 @@ const props = defineProps({
 });
 
 // explode: delete note, yeehaw: disable selecting (used when dragging)
-const emits = defineEmits(["explode", "yeehaw"]);
+const emits = defineEmits(["explode", "yeehaw", "spotlight"]);
 
 // https://vuejs.org/guide/essentials/template-refs.html
 const cardElement = ref(null);
@@ -58,7 +58,7 @@ function mouseMove(event) {
     posX.value = event.pageX - x;
     posY.value = event.pageY - y;
     // damage the timer based on movement. this is very useful
-    props.Timer.left -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 10);
+    props.Timer.left -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 100);
     if (props.Timer.left < 1) {
         die();
     }
@@ -74,7 +74,7 @@ function startMove(event) {
 
 function extendLife(event) {
     if (event.buttons === 0) {
-        props.Timer.left++;
+        // props.Timer.left++;
     }
 }
 
@@ -82,7 +82,6 @@ function die(x) {
     mouseUp();
     console.log("oh BROTHER. this just exploded: " + title.value);
     emits("explode", props.Timer);
-    clearInterval(x);
 }
 
 function wait(ms) {
@@ -104,10 +103,10 @@ onMounted(() => {
         if (timer.left > timer.length) {
             delay = Math.max(1000 - (timer.left - timer.length) * 1, 1);
         }
-        // title.value = delay;
+        title.value = timer.z;
         timer.left--;
         if (timer.left < 1) {
-            die(joe);
+            die();
             return;
         }
         await wait(delay);

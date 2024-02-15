@@ -10,6 +10,7 @@ const { timerList, unhelpfulLength } = storeToRefs(timers);
 function explode(Timer) {
     // because explosions change index so you can't just save an index inside timer object and be done with it
     timerList.value.splice(timerList.value.indexOf(Timer), 1);
+    timers.updateZ();
 }
 
 const canSelect = ref("initial");
@@ -24,10 +25,10 @@ function toggleSelect(x) {
         <div id="timers" v-if="unhelpfulLength > 0">
             <h1>you have (0.5*{{ unhelpfulLength }}) timers:</h1>
             <!-- student uses ENTIRE OBJECT as key, asked to leave APCSP -->
-            <Timer v-for="Timer in timerList" :key="Timer" :Timer="Timer" @explode="explode" @yeehaw="toggleSelect" />
+            <Timer v-for="Timer in timerList" :key="Timer" :Timer="Timer" @explode="explode" @yeehaw="toggleSelect" @spotlight="timers.spotlight" />
         </div>
         <h1 v-else>you have NO timers...</h1>
-        <button @click="timers.addTimer('this is name', 500)">oh man</button>
+        <button @click="timers.addTimer('this is name', 300)">oh man</button>
     </div>
 </template>
 
