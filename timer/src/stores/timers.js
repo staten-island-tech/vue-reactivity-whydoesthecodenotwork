@@ -18,16 +18,15 @@ export const useTimers = defineStore("timers", () => {
     const timerList = ref([]);
     let list = timerList.value;
     const unhelpfulLength = computed(() => {
-        return timerList.value.length * 2;
+        return timerList.value.length * 4;
     });
     function clear() {
         list = [];
     }
     function addTimer(name, length) {
-        list.push({ name: name, length: length, z: timerList.value.length });
+        list.push({ name: name, length: length, z: timerList.value.length, x: 0, y: 0 });
     }
 
-    // z-indices should be unique i think
     function updateZ() {
         list.sort((a, b) => {
             return a.z > b.z;

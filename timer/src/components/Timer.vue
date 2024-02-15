@@ -1,10 +1,24 @@
 <template>
-    <div class="card" ref="cardElement" :style="{ left: posX + 'px', top: posY + 'px', zIndex: Timer.z }" @mousedown="emits('spotlight', Timer)">
+    <div
+        class="card"
+        ref="cardElement"
+        :style="{ left: Timer.x + 'px', top: Timer.y + 'px', zIndex: Timer.z }"
+        @mousedown="emits('spotlight', Timer)"
+        :id="'id' + Timer.z"
+    >
         <div class="title" :style="{ cursor: cursor }">
-            <h2 @input="editTextArea" @mousedown="startMove">{{ title }}</h2>
-            <button @click="die">x</button>
+            <h2
+                @mousedown.exact="startMove"
+                @mousedown.shift="startEdit"
+                contenteditable="true"
+                ref="titleElement"
+                title="drag note to move, CONTROL CLICK to rename note"
+            >
+                {{ title }}
+            </h2>
+            <button @click="die" title="delete note">x</button>
         </div>
-        <textarea ref="textareaElement" @change="updateTitle" @input="heal"></textarea>
+        <textarea ref="textareaElement" @input="heal"></textarea>
         <div class="timer">
             <output>{{ Timer.left }} / {{ Timer.length }}</output>
             <span class="barBackground"
@@ -30,20 +44,30 @@ const emits = defineEmits(["explode", "yeehaw", "spotlight"]);
 // https://vuejs.org/guide/essentials/template-refs.html
 const cardElement = ref(null);
 const textareaElement = ref(null);
+const titleElement = ref(null);
+// the title of the note
+const title = ref("title");
 
 // vars that handle mouse dragging
 let x = 0;
 let y = 0;
-const posX = ref();
-const posY = ref();
 const cursor = ref("grab");
 
-// the title of the note
-const title = ref("title");
+function startEdit() {
+    const element = titleElement.value;
+    console.log("yippe");
+    cursor.value = "text";
+    // element.contentEditable = "true";
+    element.focus();
+    element.addEventListener("blur", endEdit);
+}
 
-function updateTitle(event) {
-    const possibleTitle = event.target.value.split("\n")[0];
-    title.value = possibleTitle.trim().length === 0 ? "note" : possibleTitle;
+function endEdit() {
+    const element = titleElement.value;
+    console.log("boohoo");
+    cursor.value = "grab";
+    // element.contentEditable = "false";
+    element.removeEventListener("blur", endEdit);
 }
 
 // both startmove and die call this. resume normal select behavior and stop dragging
@@ -53,20 +77,29 @@ function mouseUp() {
     cursor.value = "grab";
     window.removeEventListener("mousemove", mouseMove);
     window.removeEventListener("mouseup", mouseUp);
+    if (titleElement.value) {
+        titleElement.value.contentEditable = "true";
+    }
 }
 
 // mouseUp calls this when removing
 function mouseMove(event) {
-    posX.value = event.pageX - x;
-    posY.value = event.pageY - y;
-    // damage the timer based on movement. this is very useful
-    props.Timer.left -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 100);
+    props.Timer.x = event.pageX - x;
+    props.Timer.y = event.pageY - y;
+    // // damage the timer based on movement. this is very useful
+    // props.Timer.left -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 100);
+    props.Timer.left--;
     if (props.Timer.left < 1) {
         die();
     }
 }
 
 function startMove(event) {
+    // we are currently editing the title. do not drag
+    if (cursor.value === "text") {
+        return;
+    }
+    titleElement.value.contentEditable = "false";
     emits("yeehaw", "go");
     x = event.offsetX;
     y = event.offsetY;
@@ -115,6 +148,17 @@ onMounted(() => {
     }
     tick();
 });
+
+window.addEventListener("keydown", (event) => {
+    if (event.key === "Control" && cursor.value !== "grabbing") {
+        cursor.value = "text";
+    }
+});
+window.addEventListener("keyup", (event) => {
+    if (event.key === "Control" && cursor.value !== "grabbing") {
+        cursor.value = "grab";
+    }
+});
 </script>
 
 <style scoped>
@@ -141,6 +185,9 @@ onMounted(() => {
     margin: 0;
     margin-left: 0.25ch;
     margin-right: 0.5ch;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow-x: hidden;
 }
 
 .card .title h2:focus,
@@ -176,6 +223,7 @@ onMounted(() => {
 .card .timer output {
     font-family: monospace;
     min-width: fit-content;
+    cursor: default;
 }
 
 /* shoutout to the meter element for being not great */

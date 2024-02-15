@@ -16,19 +16,46 @@ function explode(Timer) {
 const canSelect = ref("initial");
 function toggleSelect(x) {
     canSelect.value = x === "go" ? "none" : "initial";
-    console.log(canSelect.value);
+    // console.log(canSelect.value);
+}
+
+function arrange() {
+    timerList.value.forEach((timer) => {
+        const element = document.querySelector(`.card#id${timer.z}`);
+        element.style.position = "static";
+        const pos = element.getBoundingClientRect();
+        timer.x = pos.x;
+        timer.y = pos.y;
+        console.log(timer);
+    });
+    Array.from(document.querySelectorAll(".card")).forEach((element) => {
+        const timer = timerList.value[element.id.slice(2)];
+        console.log(timer);
+        element.style.position = "absolute";
+        element.style.left = timer.x;
+        element.style.top = timer.y;
+    });
 }
 </script>
 
 <template>
     <div :style="{ userSelect: canSelect, webkitUserSelect: canSelect }">
-        <div id="timers" v-if="unhelpfulLength > 0">
-            <h1>you have (0.5*{{ unhelpfulLength }}) timers:</h1>
-            <Timer v-for="Timer in timerList" :key="Timer.z" :Timer="Timer" @explode="explode" @yeehaw="toggleSelect" @spotlight="timers.spotlight" />
+        <div v-if="unhelpfulLength > 0">
+            <h1>you have (0.25*{{ unhelpfulLength }}) timers:</h1>
+            <div id="timers">
+                <Timer v-for="Timer in timerList" :key="Timer" :Timer="Timer" @explode="explode" @yeehaw="toggleSelect" @spotlight="timers.spotlight" />
+            </div>
         </div>
         <h1 v-else>you have NO timers...</h1>
         <button @click="timers.addTimer('this is name', 300)">oh man</button>
+        <button @click="arrange">arrange timers</button>
     </div>
 </template>
 
-<style scoped></style>
+<style></style>
+<style scoped>
+#timers {
+    display: flex;
+    flex-wrap: wrap;
+}
+</style>
