@@ -1,27 +1,14 @@
 <script setup>
+import { storeToRefs } from "pinia";
+import { useCounterStore } from "@/stores/counter.js";
+const counterStore = useCounterStore();
+const { count } = storeToRefs(counterStore);
+console.log(count);
 import TheWelcome from "../components/TheWelcome.vue";
-const joe = [
-    {
-        name: "mario",
-        money: 500,
-    },
-    {
-        name: "luigi",
-        money: 5000,
-    },
-    {
-        name: "wario",
-        money: -500000,
-    },
-    {
-        name: "waluigi",
-        money: 0,
-    },
-];
 </script>
 
 <template>
     <main>
-        <TheWelcome v-for="character in joe" :key="character.name" :item="character" />
+        <TheWelcome v-for="character in count" :key="character.name" :character="character" />
     </main>
 </template>

@@ -2,11 +2,7 @@
     <div>
         <h1 v-if="bool">hooray</h1>
         <h1 v-else>booray</h1>
-        <ul>
-            <li v-for="(character, index) in character" :key="character.name">
-                holy hell, is that {{ character.name }} with net worth of ${{ character.money }} index number {{ index }}
-            </li>
-        </ul>
+        <p>holy hell, is that {{ character.name }} with net worth of ${{ character.money }}</p>
         <button @click="scream">press me</button>
     </div>
 </template>
