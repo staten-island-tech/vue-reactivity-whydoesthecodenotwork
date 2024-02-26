@@ -1,15 +1,15 @@
 <script setup>
+import Note from "../components/Note.vue";
 import { storeToRefs } from "pinia";
 import { useNotes } from "@/stores/notes.js";
-import Note from "../components/Note.vue";
 import { ref } from "vue";
 
 const notes = useNotes();
 const { noteList, helpfulLength } = storeToRefs(notes);
 
-function explode(Note) {
+function explode(note) {
     // because explosions change index so you can't just save an index inside note object and be done with it
-    noteList.value.splice(noteList.value.indexOf(Note), 1);
+    noteList.value.splice(noteList.value.indexOf(note), 1);
     notes.updateZ();
 }
 
@@ -45,11 +45,11 @@ function arrange() {
         <div v-if="helpfulLength > 0">
             <h2>you have {{ helpfulLength }} note{{ helpfulLength > 1 ? "s" : "" }}:</h2>
             <div id="notes">
-                <Note v-for="Note in noteList" :key="Note" :Note="Note" @explode="explode" @yeehaw="toggleSelect" @spotlight="notes.spotlight" />
+                <Note v-for="note in noteList" :key="note" :Note="note" @explode="explode" @yeehaw="toggleSelect" @spotlight="notes.spotlight" />
             </div>
         </div>
         <h2 v-else>you have NO notes...</h2>
-        <button @click="notes.addNote('placeholder text', 300)">create a note</button>
+        <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
         <button @click="arrange">arrange notes</button>
     </div>
 </template>

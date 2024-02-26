@@ -2,10 +2,10 @@
     <div
         class="card"
         ref="cardElement"
+        :class="Note.focus ? 'active' : ''"
         :style="{ left: Note.x + 'px', top: Note.y + 'px', zIndex: Note.z }"
         @mousedown="emits('spotlight', Note)"
         :id="'id' + Note.z"
-        titleElement
     >
         <div class="title" :style="{ cursor: cursor }">
             <h3
@@ -13,7 +13,6 @@
                 contenteditable="false"
                 ref="titleElement"
                 title="drag note to move, CONTROL CLICK to rename note"
-                @input="changeWidth"
                 autocomplete="off"
             >
                 {{ title }}
@@ -55,15 +54,18 @@ const cardElement = ref(null);
 const textareaElement = ref(null);
 const titleElement = ref(null);
 // the title of the note
-const title = ref("title");
+const title = ref(null);
 
 // vars that handle mouse dragging
 let x = 0;
 let y = 0;
 const cursor = ref("grab");
 
+// good enough
 function changeWidth() {
-    textareaElement.width = "";
+    // console.log("ow");
+    titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1.5em)`;
+    // textareaElement.width = titleElement.value.style.maxWidth;
 }
 
 // both startmove and die call this. resume normal select behavior and stop dragging
@@ -110,7 +112,7 @@ function heat() {
     }
 }
 
-function die(x) {
+function die() {
     mouseUp();
     // console.log("oh BROTHER. this just exploded: " + title.value);
     emits("explode", props.Note);
@@ -126,6 +128,9 @@ function wait(ms) {
 
 onMounted(() => {
     const note = props.Note;
+    emits("spotlight", note);
+    title.value = note.name;
+    new ResizeObserver(changeWidth).observe(textareaElement.value);
     note.temp = 0;
     // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
     let delay = 1000;
@@ -166,6 +171,10 @@ window.addEventListener("keyup", (event) => {
     position: absolute;
 }
 
+.card.active {
+    box-shadow: 2px 2px red;
+}
+
 .card .title {
     display: flex;
     border-bottom: 2px solid rgb(0, 0, 0);
@@ -177,7 +186,6 @@ window.addEventListener("keyup", (event) => {
     margin: 0;
     margin-left: 0.25ch;
     margin-right: 0.5ch;
-    text-overflow: ellipsis;
     white-space: nowrap;
     overflow-x: hidden;
 }
@@ -213,7 +221,7 @@ window.addEventListener("keyup", (event) => {
     min-width: 200px;
     width: 100%;
     min-height: 100px;
-    resize: vertical;
+    resize: both;
 }
 
 .card #content #left output {

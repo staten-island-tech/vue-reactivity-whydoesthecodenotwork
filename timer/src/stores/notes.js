@@ -24,7 +24,7 @@ export const useNotes = defineStore("notes", () => {
         list = [];
     }
     function addNote(name, max) {
-        list.push({ name: name, max: max, z: noteList.value.length, x: 0, y: 0 });
+        list.push({ name: name, max: max, z: noteList.value.length, x: 0, y: 0, focus: false });
     }
 
     function updateZ() {
@@ -41,7 +41,11 @@ export const useNotes = defineStore("notes", () => {
         list.filter((note) => note.z > Note.z).forEach((note) => {
             note.z--;
         });
+        list.forEach((note) => {
+            note.focus = false;
+        });
         Note.z = list.length - 1;
+        Note.focus = true;
     }
     return { noteList, helpfulLength, clear, addNote, updateZ, spotlight };
 });
