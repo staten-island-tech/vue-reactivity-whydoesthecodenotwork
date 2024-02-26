@@ -2,31 +2,40 @@
     <div
         class="card"
         ref="cardElement"
-        :style="{ left: Timer.x + 'px', top: Timer.y + 'px', zIndex: Timer.z }"
-        @mousedown="emits('spotlight', Timer)"
-        :id="'id' + Timer.z"
+        :style="{ left: Note.x + 'px', top: Note.y + 'px', zIndex: Note.z }"
+        @mousedown="emits('spotlight', Note)"
+        :id="'id' + Note.z"
+        titleElement
     >
         <div class="title" :style="{ cursor: cursor }">
-            <h2
+            <h3
                 @mousedown.exact="startMove"
-                @mousedown.shift="startEdit"
-                contenteditable="true"
+                contenteditable="false"
                 ref="titleElement"
                 title="drag note to move, CONTROL CLICK to rename note"
+                @input="changeWidth"
+                autocomplete="off"
             >
                 {{ title }}
-            </h2>
+            </h3>
             <button @click="die" title="delete note">x</button>
         </div>
-        <textarea ref="textareaElement" @input="heal"></textarea>
-        <div class="timer">
-            <output>{{ Timer.left }} / {{ Timer.length }}</output>
-            <span class="barBackground"
-                ><span
-                    class="bar"
-                    :style="{ width: (Timer.left * 100) / Timer.length + '%', backgroundColor: Timer.left > Timer.length ? 'rgb(0,255,0)' : 'rgb(255,255,0)' }"
-                ></span
-            ></span>
+        <div id="content">
+            <div id="left">
+                <textarea ref="textareaElement" @input="heat"></textarea>
+                <output style="cursor: help" title="Notes will explode when overheated">Temperature: {{ Math.round((Note.temp / Note.max) * 100) }}%</output>
+            </div>
+            <div id="temp">
+                <span class="barBackground">
+                    <span
+                        class="bar"
+                        :style="{
+                            height: (Note.temp * 100) / Note.max + '%',
+                            backgroundColor: Note.temp > Note.max * 0.75 ? 'rgb(255,0,0)' : 'rgb(255,255,0)',
+                        }"
+                    ></span>
+                </span>
+            </div>
         </div>
     </div>
 </template>
@@ -35,7 +44,7 @@
 import { onMounted, ref } from "vue";
 
 const props = defineProps({
-    Timer: "Object",
+    Note: "Object",
 });
 
 // explode: delete note, yeehaw: disable selecting (used when dragging)
@@ -53,44 +62,29 @@ let x = 0;
 let y = 0;
 const cursor = ref("grab");
 
-function startEdit() {
-    const element = titleElement.value;
-    console.log("yippe");
-    cursor.value = "text";
-    // element.contentEditable = "true";
-    element.focus();
-    element.addEventListener("blur", endEdit);
-}
-
-function endEdit() {
-    const element = titleElement.value;
-    console.log("boohoo");
-    cursor.value = "grab";
-    // element.contentEditable = "false";
-    element.removeEventListener("blur", endEdit);
+function changeWidth() {
+    textareaElement.width = "";
 }
 
 // both startmove and die call this. resume normal select behavior and stop dragging
 function mouseUp() {
-    console.log("BWUHH");
+    // console.log("BWUHH");
     emits("yeehaw", "stop");
     cursor.value = "grab";
     window.removeEventListener("mousemove", mouseMove);
     window.removeEventListener("mouseup", mouseUp);
     if (titleElement.value) {
-        titleElement.value.contentEditable = "true";
+        titleElement.value.contentEditable = "plaintext-only";
     }
 }
 
 // mouseUp calls this when removing
 function mouseMove(event) {
-    props.Timer.x = event.pageX - x;
-    props.Timer.y = event.pageY - y;
-    // // damage the timer based on movement. this is very useful
-    // props.Timer.left -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 100);
-    props.Timer.left--;
-    if (props.Timer.left < 1) {
-        die();
+    props.Note.x = event.pageX - x;
+    props.Note.y = event.pageY - y;
+    // props.Note.temp -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 100);
+    if (props.Note.temp > 0) {
+        props.Note.temp--;
     }
 }
 
@@ -108,14 +102,18 @@ function startMove(event) {
     window.addEventListener("mouseup", mouseUp);
 }
 
-function heal() {
-    props.Timer.left++;
+function heat() {
+    props.Note.temp += 5;
+    if (props.Note.temp > props.Note.max) {
+        die();
+        return;
+    }
 }
 
 function die(x) {
     mouseUp();
-    console.log("oh BROTHER. this just exploded: " + title.value);
-    emits("explode", props.Timer);
+    // console.log("oh BROTHER. this just exploded: " + title.value);
+    emits("explode", props.Note);
 }
 
 function wait(ms) {
@@ -127,21 +125,16 @@ function wait(ms) {
 }
 
 onMounted(() => {
-    const timer = props.Timer;
-    timer.left = timer.length;
-
-    // overhealed timer will drain faster. can't change delay of settimeout so function that calls itself after delay it is
+    const note = props.Note;
+    note.temp = 0;
+    // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
     let delay = 1000;
     async function tick() {
-        delay = 1000;
-        if (timer.left > timer.length) {
-            delay = Math.max(1000 - (timer.left - timer.length) * 1, 1);
-        }
-        // title.value = timer.z;
-        timer.left--;
-        if (timer.left < 1) {
-            die();
-            return;
+        delay = 500 + (note.max - note.temp) * 1;
+
+        // title.value = delay;
+        if (note.temp > 0) {
+            note.temp--;
         }
         await wait(delay);
         tick();
@@ -168,7 +161,6 @@ window.addEventListener("keyup", (event) => {
     background-color: rgb(211, 211, 211);
     border: 2px solid rgb(0, 0, 0);
     border-radius: 5px;
-    padding-bottom: 0.1rem;
     display: flex;
     flex-direction: column;
     position: absolute;
@@ -179,7 +171,7 @@ window.addEventListener("keyup", (event) => {
     border-bottom: 2px solid rgb(0, 0, 0);
 }
 
-.card .title h2 {
+.card .title h3 {
     font-weight: normal;
     flex-grow: 1;
     margin: 0;
@@ -190,7 +182,7 @@ window.addEventListener("keyup", (event) => {
     overflow-x: hidden;
 }
 
-.card .title h2:focus,
+.card .title h3:focus,
 .card .title button:focus,
 .card textarea:focus {
     outline: none;
@@ -202,45 +194,50 @@ window.addEventListener("keyup", (event) => {
     width: 1.5em;
 }
 
-.card textarea {
-    width: 100%;
-    border: none;
-    border-bottom: 1px dotted rgb(0, 0, 0);
-    min-width: 100px;
-    width: 200px;
-    min-height: 100px;
-}
-
-.card .timer {
+.card #content {
     display: flex;
-    gap: 1ch;
     justify-content: space-between;
-    padding: 0 1ch;
-    width: 100%;
-    align-items: center;
+    flex-grow: 1;
 }
 
-.card .timer output {
+.card #content #left {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.card #content #left textarea {
+    border: none;
+    flex-grow: 1;
+    border-bottom: 1px dotted rgb(0, 0, 0);
+    min-width: 200px;
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+}
+
+.card #content #left output {
     font-family: monospace;
     min-width: fit-content;
     cursor: default;
+    padding-left: 0.1rem;
+    padding-bottom: 0.1rem;
 }
 
 /* shoutout to the meter element for being not great */
-.barBackground {
-    width: 100%;
-    flex-grow: 1;
-    height: 0.5rem;
+.card #content #temp .barBackground {
+    height: 100%;
+    width: 0.5rem;
     background-color: rgb(0, 0, 0);
-    border-radius: 1rem;
     display: flex;
-    align-items: center;
-    padding: 1px;
+    align-items: end;
+    justify-content: center;
+    /* padding: 1px; */
+    border-left: 1px solid rgb(0, 0, 0);
 }
 
-.bar {
-    height: 90%;
+.card #content #temp .barBackground .bar {
+    width: 90%;
     /* background-color: rgb(255, 255, 0); */
-    border-radius: 0.8rem;
 }
 </style>

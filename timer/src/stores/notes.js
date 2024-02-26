@@ -14,17 +14,17 @@ import { defineStore } from "pinia";
 
 // https://pinia.vuejs.org/core-concepts/#Setup-Stores
 // BWUHH??
-export const useTimers = defineStore("timers", () => {
-    const timerList = ref([]);
-    let list = timerList.value;
-    const unhelpfulLength = computed(() => {
-        return timerList.value.length * 4;
+export const useNotes = defineStore("notes", () => {
+    const noteList = ref([]);
+    let list = noteList.value;
+    const helpfulLength = computed(() => {
+        return noteList.value.length * 1;
     });
     function clear() {
         list = [];
     }
-    function addTimer(name, length) {
-        list.push({ name: name, length: length, z: timerList.value.length, x: 0, y: 0 });
+    function addNote(name, max) {
+        list.push({ name: name, max: max, z: noteList.value.length, x: 0, y: 0 });
     }
 
     function updateZ() {
@@ -36,12 +36,12 @@ export const useTimers = defineStore("timers", () => {
         }
     }
     // i was not expecting to have to make a window management system
-    function spotlight(Timer) {
-        // console.log("all eyes on " + Timer);
-        list.filter((timer) => timer.z > Timer.z).forEach((timer) => {
-            timer.z--;
+    function spotlight(Note) {
+        // console.log("all eyes on " + Note);
+        list.filter((note) => note.z > Note.z).forEach((note) => {
+            note.z--;
         });
-        Timer.z = list.length - 1;
+        Note.z = list.length - 1;
     }
-    return { timerList, unhelpfulLength, clear, addTimer, updateZ, spotlight };
+    return { noteList, helpfulLength, clear, addNote, updateZ, spotlight };
 });
