@@ -2,10 +2,10 @@
     <div
         class="card"
         ref="cardElement"
+        :class="Note.focus ? 'active' : ''"
         :style="{ left: Note.x + 'px', top: Note.y + 'px', zIndex: Note.z }"
         @mousedown="emits('spotlight', Note)"
         :id="'id' + Note.z"
-        titleElement
     >
         <div class="title" :style="{ cursor: cursor }">
             <h3
@@ -13,7 +13,6 @@
                 contenteditable="false"
                 ref="titleElement"
                 title="drag note to move, CONTROL CLICK to rename note"
-                @input="changeWidth"
                 autocomplete="off"
             >
                 {{ title }}
@@ -22,7 +21,7 @@
         </div>
         <div id="content">
             <div id="left">
-                <textarea ref="textareaElement" @input="heat" @mousemove="changeWidth"></textarea>
+                <textarea ref="textareaElement" @input="heat"></textarea>
                 <output style="cursor: help" title="Notes will explode when overheated">Temperature: {{ Math.round((Note.temp / Note.max) * 100) }}%</output>
             </div>
             <div id="temp">
@@ -113,7 +112,7 @@ function heat() {
     }
 }
 
-function die(x) {
+function die() {
     mouseUp();
     // console.log("oh BROTHER. this just exploded: " + title.value);
     emits("explode", props.Note);
@@ -129,7 +128,9 @@ function wait(ms) {
 
 onMounted(() => {
     const note = props.Note;
+    emits("spotlight", note);
     title.value = note.name;
+    new ResizeObserver(changeWidth).observe(textareaElement.value);
     note.temp = 0;
     // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
     let delay = 1000;
@@ -168,6 +169,10 @@ window.addEventListener("keyup", (event) => {
     display: flex;
     flex-direction: column;
     position: absolute;
+}
+
+.card.active {
+    box-shadow: 2px 2px red;
 }
 
 .card .title {
