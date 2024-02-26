@@ -1,7 +1,7 @@
 <script setup>
+import Note from "../components/Note.vue";
 import { storeToRefs } from "pinia";
 import { useNotes } from "@/stores/notes.js";
-import Note from "../components/Note.vue";
 import { ref } from "vue";
 
 const notes = useNotes();
@@ -49,7 +49,7 @@ function arrange() {
             </div>
         </div>
         <h2 v-else>you have NO notes...</h2>
-        <button @click="notes.addNote('placeholder text', 300)">create a note</button>
+        <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
         <button @click="arrange">arrange notes</button>
     </div>
 </template>

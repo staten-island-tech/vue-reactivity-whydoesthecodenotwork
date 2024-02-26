@@ -22,7 +22,7 @@
         </div>
         <div id="content">
             <div id="left">
-                <textarea ref="textareaElement" @input="heat"></textarea>
+                <textarea ref="textareaElement" @input="heat" @mousemove="changeWidth"></textarea>
                 <output style="cursor: help" title="Notes will explode when overheated">Temperature: {{ Math.round((Note.temp / Note.max) * 100) }}%</output>
             </div>
             <div id="temp">
@@ -55,15 +55,18 @@ const cardElement = ref(null);
 const textareaElement = ref(null);
 const titleElement = ref(null);
 // the title of the note
-const title = ref("title");
+const title = ref(null);
 
 // vars that handle mouse dragging
 let x = 0;
 let y = 0;
 const cursor = ref("grab");
 
+// good enough
 function changeWidth() {
-    textareaElement.width = "";
+    // console.log("ow");
+    titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1.5em)`;
+    // textareaElement.width = titleElement.value.style.maxWidth;
 }
 
 // both startmove and die call this. resume normal select behavior and stop dragging
@@ -126,6 +129,7 @@ function wait(ms) {
 
 onMounted(() => {
     const note = props.Note;
+    title.value = note.name;
     note.temp = 0;
     // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
     let delay = 1000;
@@ -177,7 +181,6 @@ window.addEventListener("keyup", (event) => {
     margin: 0;
     margin-left: 0.25ch;
     margin-right: 0.5ch;
-    text-overflow: ellipsis;
     white-space: nowrap;
     overflow-x: hidden;
 }
@@ -213,7 +216,7 @@ window.addEventListener("keyup", (event) => {
     min-width: 200px;
     width: 100%;
     min-height: 100px;
-    resize: vertical;
+    resize: both;
 }
 
 .card #content #left output {
