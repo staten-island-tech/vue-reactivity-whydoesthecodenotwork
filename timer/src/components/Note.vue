@@ -10,6 +10,7 @@
         <div class="title" :style="{ cursor: cursor }">
             <h3
                 @mousedown.exact="startMove"
+                @input="heat"
                 contenteditable="false"
                 ref="titleElement"
                 title="drag note to move, CONTROL CLICK to rename note"
@@ -64,7 +65,7 @@ const cursor = ref("grab");
 // good enough
 function changeWidth() {
     // console.log("ow");
-    titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1.5em)`;
+    titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1ch)`;
     // textareaElement.width = titleElement.value.style.maxWidth;
 }
 
@@ -166,6 +167,7 @@ window.addEventListener("keyup", (event) => {
     background-color: rgb(211, 211, 211);
     border: 2px solid rgb(0, 0, 0);
     border-radius: 5px;
+    overflow: hidden;
     display: flex;
     flex-direction: column;
     position: absolute;
@@ -178,6 +180,7 @@ window.addEventListener("keyup", (event) => {
 .card .title {
     display: flex;
     border-bottom: 2px solid rgb(0, 0, 0);
+    gap: 0.5ch;
 }
 
 .card .title h3 {
@@ -199,7 +202,8 @@ window.addEventListener("keyup", (event) => {
 .card .title button {
     border: none;
     border-left: 1px solid;
-    width: 1.5em;
+    width: 1ch;
+    box-sizing: content-box;
 }
 
 .card #content {
@@ -219,7 +223,6 @@ window.addEventListener("keyup", (event) => {
     flex-grow: 1;
     border-bottom: 1px dotted rgb(0, 0, 0);
     min-width: 200px;
-    width: 100%;
     min-height: 100px;
     resize: both;
 }
