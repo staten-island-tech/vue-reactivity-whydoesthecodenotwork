@@ -24,14 +24,15 @@ function arrange() {
     noteList.value.forEach((note) => {
         const element = document.querySelector(`.card#id${note.z}`);
         element.style.position = "static";
+    });
+    noteList.value.forEach((note) => {
+        const element = document.querySelector(`.card#id${note.z}`);
         const pos = element.getBoundingClientRect();
         note.x = pos.x;
         note.y = pos.y;
-        console.log(note);
     });
     Array.from(document.querySelectorAll(".card")).forEach((element) => {
         const note = noteList.value[element.id.slice(2)];
-        console.log(note);
         element.style.position = "absolute";
         element.style.left = note.x;
         element.style.top = note.y;
@@ -40,10 +41,10 @@ function arrange() {
 </script>
 
 <template>
-    <div :style="{ userSelect: canSelect, webkitUserSelect: canSelect }">
+    <div :style="{ userSelect: canSelect, webkitUserSelect: canSelect }" id="main">
         <h1>the noteinator</h1>
         <div v-if="helpfulLength > 0">
-            <h2>you have {{ helpfulLength }} note{{ helpfulLength > 1 ? "s" : "" }}:</h2>
+            <h2>you have {{ helpfulLength }} note{{ helpfulLength > 1 ? "s" : "" }}</h2>
             <div id="notes">
                 <Note v-for="note in noteList" :key="note" :Note="note" @explode="explode" @yeehaw="toggleSelect" @spotlight="notes.spotlight" />
             </div>
@@ -56,11 +57,24 @@ function arrange() {
 
 <style></style>
 <style scoped>
+#main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+h1,
+h2 {
+    margin: auto 0;
+}
+
 h1 {
     text-decoration: underline;
 }
+
 #notes {
     display: flex;
     flex-wrap: wrap;
+    align-self: stretch;
 }
 </style>

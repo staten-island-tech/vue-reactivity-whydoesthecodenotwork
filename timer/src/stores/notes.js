@@ -47,5 +47,10 @@ export const useNotes = defineStore("notes", () => {
         Note.z = list.length - 1;
         Note.focus = true;
     }
-    return { noteList, helpfulLength, clear, addNote, updateZ, spotlight };
+    function spotdark() {
+        list.forEach((note) => {
+            note.focus = false;
+        });
+    }
+    return { noteList, helpfulLength, clear, addNote, updateZ, spotlight, spotdark };
 });
