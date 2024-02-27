@@ -65,7 +65,9 @@ const cursor = ref("grab");
 // good enough
 function changeWidth() {
     // console.log("ow");
-    titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1ch)`;
+    if (titleElement.value) {
+        titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1ch)`;
+    }
     // textareaElement.width = titleElement.value.style.maxWidth;
 }
 
@@ -83,8 +85,9 @@ function mouseUp() {
 
 // mouseUp calls this when removing
 function mouseMove(event) {
-    props.Note.x = event.pageX - x;
-    props.Note.y = event.pageY - y;
+    // These numbers came to me in a dream
+    props.Note.x = event.pageX - x - 4;
+    props.Note.y = event.pageY - y - 2;
     // props.Note.temp -= Math.floor((Math.abs(event.movementX / window.innerWidth) + Math.abs(event.movementY / window.innerHeight)) * 100);
     if (props.Note.temp > 0) {
         props.Note.temp--;
@@ -174,13 +177,15 @@ window.addEventListener("keyup", (event) => {
 }
 
 .card.active {
-    box-shadow: 2px 2px red;
+    /* IS THAT THE GRIM REAPER??? */
+    box-shadow: 0 0 5px #666666;
 }
 
 .card .title {
     display: flex;
     border-bottom: 2px solid rgb(0, 0, 0);
     gap: 0.5ch;
+    background-image: linear-gradient(90deg, #b4b4b4, #dddddd);
 }
 
 .card .title h3 {

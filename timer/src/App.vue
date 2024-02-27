@@ -7,4 +7,11 @@ import { RouterView } from "vue-router";
     <RouterView />
 </template>
 
+<style>
+body {
+    background: radial-gradient(circle at center, #000000 0px, transparent 3px);
+    background-size: 75px 75px;
+}
+</style>
+
 <style scoped></style>

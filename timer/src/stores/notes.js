@@ -29,7 +29,7 @@ export const useNotes = defineStore("notes", () => {
 
     function updateZ() {
         list.sort((a, b) => {
-            return a.z > b.z;
+            return a.z - b.z;
         });
         for (let i = 0; i < list.length; i++) {
             list[i].z = i;
@@ -47,10 +47,5 @@ export const useNotes = defineStore("notes", () => {
         Note.z = list.length - 1;
         Note.focus = true;
     }
-    function spotdark() {
-        list.forEach((note) => {
-            note.focus = false;
-        });
-    }
-    return { noteList, helpfulLength, clear, addNote, updateZ, spotlight, spotdark };
+    return { noteList, helpfulLength, clear, addNote, updateZ, spotlight };
 });
