@@ -66,7 +66,7 @@ const cursor = ref("grab");
 function changeWidth() {
     // console.log("ow");
     if (titleElement.value) {
-        titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1ch)`;
+        titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1ch - 22px)`;
     }
     // textareaElement.width = titleElement.value.style.maxWidth;
 }
@@ -139,7 +139,7 @@ onMounted(() => {
     // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
     let delay = 1000;
     async function tick() {
-        delay = 500 + (note.max - note.temp) * 1;
+        delay = 200 + (note.max - note.temp) * 2;
 
         // title.value = delay;
         if (note.temp > 0) {
@@ -160,6 +160,9 @@ window.addEventListener("keyup", (event) => {
     if (event.key === "Control" && cursor.value !== "grabbing") {
         cursor.value = "grab";
     }
+});
+window.addEventListener("focus", () => {
+    cursor.value = "grab";
 });
 </script>
 
@@ -193,7 +196,7 @@ window.addEventListener("keyup", (event) => {
     flex-grow: 1;
     margin: 0;
     margin-left: 0.25ch;
-    margin-right: 0.5ch;
+    /* margin-right: 0.5ch; */
     white-space: nowrap;
     overflow-x: hidden;
 }
