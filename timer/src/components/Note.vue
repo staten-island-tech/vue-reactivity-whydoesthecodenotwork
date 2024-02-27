@@ -13,7 +13,7 @@
                 @input="heat"
                 contenteditable="false"
                 ref="titleElement"
-                title="drag note to move, CONTROL CLICK to rename note"
+                title="DRAG titlebar to move, CONTROL CLICK to rename note"
                 autocomplete="off"
             >
                 {{ title }}
@@ -22,7 +22,8 @@
         </div>
         <div id="content">
             <div id="left">
-                <textarea ref="textareaElement" @input="heat"></textarea>
+                <textarea ref="textareaElement" @input="heat" @blur="endEdit" title="use markdown formatting"></textarea>
+                <div id="output" ref="mdElement" @dblclick="startEdit" title="DOUBLE CLICK to edit"></div>
                 <output style="cursor: help" title="Notes will explode when overheated">Temperature: {{ Math.round((Note.temp / Note.max) * 100) }}%</output>
             </div>
             <div id="temp">
@@ -42,6 +43,9 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
+import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+// "i absolve you of your sins. you have been forgiven"
+import DOMPurify from "dompurify";
 
 const props = defineProps({
     Note: "Object",
@@ -52,8 +56,9 @@ const emits = defineEmits(["explode", "yeehaw", "spotlight"]);
 
 // https://vuejs.org/guide/essentials/template-refs.html
 const cardElement = ref(null);
-const textareaElement = ref(null);
 const titleElement = ref(null);
+const textareaElement = ref(null);
+const mdElement = ref(null);
 // the title of the note
 const title = ref(null);
 
@@ -79,7 +84,8 @@ function mouseUp() {
     window.removeEventListener("mousemove", mouseMove);
     window.removeEventListener("mouseup", mouseUp);
     if (titleElement.value) {
-        titleElement.value.contentEditable = "plaintext-only";
+        // shoutout to firefox for just Not Supporting plaintext-only
+        titleElement.value.contentEditable = "true";
     }
 }
 
@@ -106,6 +112,25 @@ function startMove(event) {
     cursor.value = "grabbing";
     window.addEventListener("mousemove", mouseMove);
     window.addEventListener("mouseup", mouseUp);
+}
+
+// user is now editing the textarea. stop displaying markdown
+function startEdit() {
+    const mdSize = mdElement.value.getBoundingClientRect();
+    mdElement.value.style.display = "none";
+    textareaElement.value.style.width = mdSize.width + "px";
+    textareaElement.value.style.height = mdSize.height + "px";
+    textareaElement.value.style.display = "flex";
+    textareaElement.value.focus();
+}
+
+function endEdit() {
+    const textareaSize = textareaElement.value.getBoundingClientRect();
+    textareaElement.value.style.display = "none";
+    mdElement.value.innerHTML = DOMPurify.sanitize(marked.parse(textareaElement.value.value));
+    mdElement.value.style.width = textareaSize.width + "px";
+    mdElement.value.style.height = textareaSize.height + "px";
+    mdElement.value.style.display = "block";
 }
 
 function heat() {
@@ -189,6 +214,7 @@ window.addEventListener("focus", () => {
     border-bottom: 2px solid rgb(0, 0, 0);
     gap: 0.5ch;
     background-image: linear-gradient(90deg, #b4b4b4, #dddddd);
+    justify-content: space-between;
 }
 
 .card .title h3 {
@@ -227,6 +253,7 @@ window.addEventListener("focus", () => {
 }
 
 .card #content #left textarea {
+    display: none;
     border: none;
     flex-grow: 1;
     border-bottom: 1px dotted rgb(0, 0, 0);
@@ -235,9 +262,25 @@ window.addEventListener("focus", () => {
     resize: both;
 }
 
+/* markdown output */
+.card #content #left #output {
+    display: block;
+    border: none;
+    flex-grow: 1;
+    border-bottom: 1px dotted rgb(0, 0, 0);
+    /* cuts your hex code in half */
+    background: #fff;
+    min-width: 200px;
+    min-height: 100px;
+    overflow-y: scroll;
+    resize: both;
+}
+
+/* temperature % */
 .card #content #left output {
     font-family: monospace;
     min-width: fit-content;
+    min-width: -moz-fit-content;
     cursor: default;
     padding-left: 0.1rem;
     padding-bottom: 0.1rem;
