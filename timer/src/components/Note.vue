@@ -69,9 +69,10 @@ const cursor = ref("grab");
 
 // good enough
 function changeWidth() {
-    // console.log("ow");
     if (titleElement.value) {
-        titleElement.value.style.maxWidth = `calc(${Math.max(200, textareaElement.value.getBoundingClientRect().width)}px + 0.5rem - 1ch - 22px)`;
+        console.log("ow");
+        const width = Math.max(textareaElement.value.getBoundingClientRect().width, mdElement.value.getBoundingClientRect().width);
+        titleElement.value.style.maxWidth = `calc(${Math.max(200, width)}px + 0.5rem - 1ch - 22px)`;
     }
     // textareaElement.width = titleElement.value.style.maxWidth;
 }
@@ -160,6 +161,7 @@ onMounted(() => {
     emits("spotlight", note);
     title.value = note.name;
     new ResizeObserver(changeWidth).observe(textareaElement.value);
+    new ResizeObserver(changeWidth).observe(mdElement.value);
     note.temp = 0;
     // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
     let delay = 1000;
@@ -260,6 +262,7 @@ window.addEventListener("focus", () => {
     min-width: 200px;
     min-height: 100px;
     resize: both;
+    padding: 4px;
 }
 
 /* markdown output */
@@ -272,8 +275,14 @@ window.addEventListener("focus", () => {
     background: #fff;
     min-width: 200px;
     min-height: 100px;
-    overflow-y: scroll;
+    overflow-y: auto;
     resize: both;
+    padding: 4px;
+}
+
+/* i'm 14 and this is */
+#output:deep(*) {
+    margin-top: 0;
 }
 
 /* temperature % */
