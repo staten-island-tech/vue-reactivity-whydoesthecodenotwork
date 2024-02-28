@@ -2,7 +2,7 @@
 import Note from "../components/Note.vue";
 import { storeToRefs } from "pinia";
 import { useNotes } from "@/stores/notes.js";
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 
 const notes = useNotes();
 const { noteList, helpfulLength } = storeToRefs(notes);
@@ -38,6 +38,52 @@ function arrange() {
         element.style.top = note.y;
     });
 }
+
+// https://developer.mozilla.org/en-US/docs/Web/API/Web_Storage_API/Using_the_Web_Storage_API
+function storageAvailable(type) {
+    let storage;
+    try {
+        storage = window[type];
+        const x = "__storage_test__";
+        storage.setItem(x, x);
+        storage.removeItem(x);
+        return true;
+    } catch (e) {
+        return (
+            e instanceof DOMException &&
+            // everything except Firefox
+            (e.code === 22 ||
+                // Firefox
+                e.code === 1014 ||
+                // test name field too, because code might not be present
+                // everything except Firefox
+                e.name === "QuotaExceededError" ||
+                // Firefox
+                e.name === "NS_ERROR_DOM_QUOTA_REACHED") &&
+            // acknowledge QuotaExceededError only if there's something already stored
+            storage &&
+            storage.length !== 0
+        );
+    }
+}
+
+function save() {
+    if (storageAvailable("localStorage")) {
+        localStorage.setItem("notes", JSON.stringify(noteList.value));
+    }
+}
+
+function load() {
+    if (storageAvailable("localStorage")) {
+        if (localStorage.getItem("notes")) {
+            // load saved notes
+            const loadNotes = Array.from(JSON.parse(localStorage.getItem("notes")));
+            notes.set(loadNotes);
+        }
+    }
+}
+
+onMounted(load);
 </script>
 
 <template>
@@ -48,8 +94,12 @@ function arrange() {
                 <h2>you have {{ helpfulLength }} note{{ helpfulLength > 1 ? "s" : "" }}</h2>
             </div>
             <h2 v-else>you have NO notes...</h2>
-            <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
-            <button @click="arrange">arrange notes</button>
+            <div id="buttons">
+                <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
+                <button @click="arrange">arrange notes</button>
+                <button @click="save">save notes</button>
+                <button @click="load">load notes</button>
+            </div>
             <a
                 href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
                 target="_blank"
@@ -88,5 +138,10 @@ h1 {
     display: flex;
     flex-wrap: wrap;
     align-self: stretch;
+}
+
+#buttons {
+    display: flex;
+    gap: 1rem;
 }
 </style>
