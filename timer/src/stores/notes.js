@@ -16,36 +16,38 @@ import { defineStore } from "pinia";
 // BWUHH??
 export const useNotes = defineStore("notes", () => {
     const noteList = ref([]);
-    let list = noteList.value;
+    // let list = noteList.value;
     const helpfulLength = computed(() => {
         return noteList.value.length * 1;
     });
-    function clear() {
-        list = [];
+    function set(x) {
+        noteList.value = [...x];
     }
     function addNote(name, max) {
-        list.push({ name: name, max: max, z: noteList.value.length, x: 0, y: 0, focus: false });
+        noteList.value.push({ name: name, max: max, z: noteList.value.length, x: 0, y: 0, focus: false, content: "", temp: 0 });
     }
 
     function updateZ() {
-        list.sort((a, b) => {
+        noteList.value.sort((a, b) => {
             return a.z - b.z;
         });
-        for (let i = 0; i < list.length; i++) {
-            list[i].z = i;
+        for (let i = 0; i < noteList.value.length; i++) {
+            noteList.value[i].z = i;
         }
     }
     // i was not expecting to have to make a window management system
     function spotlight(Note) {
         // console.log("all eyes on " + Note);
-        list.filter((note) => note.z > Note.z).forEach((note) => {
-            note.z--;
-        });
-        list.forEach((note) => {
+        noteList.value
+            .filter((note) => note.z > Note.z)
+            .forEach((note) => {
+                note.z--;
+            });
+        noteList.value.forEach((note) => {
             note.focus = false;
         });
-        Note.z = list.length - 1;
+        Note.z = noteList.value.length - 1;
         Note.focus = true;
     }
-    return { noteList, helpfulLength, clear, addNote, updateZ, spotlight };
+    return { noteList, helpfulLength, set, addNote, updateZ, spotlight };
 });

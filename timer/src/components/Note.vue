@@ -10,8 +10,8 @@
         <div class="title" :style="{ cursor: cursor }">
             <h3
                 @mousedown.exact="startMove"
-                @input="heat"
-                contenteditable="false"
+                @input="titleEdited"
+                contenteditable="true"
                 ref="titleElement"
                 title="DRAG titlebar to move, CONTROL CLICK to rename note"
                 autocomplete="off"
@@ -22,9 +22,11 @@
         </div>
         <div id="content">
             <div id="left">
-                <textarea ref="textareaElement" @input="heat" @blur="endEdit" title="use markdown formatting"></textarea>
+                <textarea ref="textareaElement" @input="heat" @blur="endEdit" title="use markdown formatting" v-model="Note.content"></textarea>
                 <div id="output" ref="mdElement" @dblclick="startEdit" title="DOUBLE CLICK to edit"></div>
-                <output style="cursor: help" title="Notes will explode when overheated">Temperature: {{ Math.round((Note.temp / Note.max) * 100) }}%</output>
+                <output style="cursor: help" title="Notes will explode when overheated" tabindex="0"
+                    >Temperature: {{ Math.round((Note.temp / Note.max) * 100) }}%</output
+                >
             </div>
             <div id="temp">
                 <span class="barBackground">
@@ -43,7 +45,9 @@
 
 <script setup>
 import { onMounted, ref } from "vue";
-import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+import { marked } from "marked";
+let ticking = false;
+marked.use({ gfm: true, breaks: true });
 // "i absolve you of your sins. you have been forgiven"
 import DOMPurify from "dompurify";
 
@@ -67,14 +71,14 @@ let x = 0;
 let y = 0;
 const cursor = ref("grab");
 
-// good enough
-function changeWidth() {
+// set width of titleelement
+function changeWidth(e) {
     if (titleElement.value) {
-        console.log("ow");
-        const width = Math.max(textareaElement.value.getBoundingClientRect().width, mdElement.value.getBoundingClientRect().width);
-        titleElement.value.style.maxWidth = `calc(${Math.max(200, width)}px + 0.5rem - 1ch - 22px)`;
+        const size = e[0].target.getBoundingClientRect();
+        titleElement.value.style.maxWidth = `calc(${Math.max(200, size.width)}px + 0.5rem - 1ch - 22px)`;
+        props.Note.width = size.width;
+        props.Note.height = size.height;
     }
-    // textareaElement.width = titleElement.value.style.maxWidth;
 }
 
 // both startmove and die call this. resume normal select behavior and stop dragging
@@ -126,6 +130,10 @@ function startEdit() {
 }
 
 function endEdit() {
+    // if you explode a note it counts as endedit (blur), and that means textareaElement won't exist
+    if (!textareaElement.value) {
+        return;
+    }
     const textareaSize = textareaElement.value.getBoundingClientRect();
     textareaElement.value.style.display = "none";
     mdElement.value.innerHTML = DOMPurify.sanitize(marked.parse(textareaElement.value.value));
@@ -140,6 +148,14 @@ function heat() {
         die();
         return;
     }
+    if (!ticking) {
+        tick();
+    }
+}
+
+function titleEdited() {
+    props.Note.name = titleElement.value.innerHTML;
+    heat();
 }
 
 function die() {
@@ -156,25 +172,34 @@ function wait(ms) {
     });
 }
 
+async function tick() {
+    ticking = true;
+    const note = props.Note;
+    let delay = 200 + (note.max - note.temp) * 2;
+
+    // title.value = delay;
+    if (note.temp > 0) {
+        note.temp--;
+        if (note.temp === 0) {
+            return;
+        }
+    }
+    await wait(delay);
+    tick();
+}
+
 onMounted(() => {
     const note = props.Note;
-    emits("spotlight", note);
+    cardElement.value.style.zIndex = note.z;
     title.value = note.name;
+    textareaElement.value.style.height = note.height + "px";
+    textareaElement.value.style.width = note.width + "px";
+    mdElement.value.style.height = note.height + "px";
+    mdElement.value.style.width = note.width + "px";
     new ResizeObserver(changeWidth).observe(textareaElement.value);
     new ResizeObserver(changeWidth).observe(mdElement.value);
-    note.temp = 0;
+    mdElement.value.innerHTML = DOMPurify.sanitize(marked.parse(textareaElement.value.value));
     // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
-    let delay = 1000;
-    async function tick() {
-        delay = 200 + (note.max - note.temp) * 2;
-
-        // title.value = delay;
-        if (note.temp > 0) {
-            note.temp--;
-        }
-        await wait(delay);
-        tick();
-    }
     tick();
 });
 
@@ -276,6 +301,7 @@ window.addEventListener("focus", () => {
     min-width: 200px;
     min-height: 100px;
     overflow-y: auto;
+    word-wrap: break-word;
     resize: both;
     padding: 4px;
 }
@@ -283,6 +309,7 @@ window.addEventListener("focus", () => {
 /* i'm 14 and this is */
 #output:deep(*) {
     margin-top: 0;
+    margin-bottom: 0;
 }
 
 /* temperature % */
