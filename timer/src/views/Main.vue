@@ -50,7 +50,12 @@ function arrange() {
             <h2 v-else>you have NO notes...</h2>
             <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
             <button @click="arrange">arrange notes</button>
-            <a href="https://www.markdownguide.org/basic-syntax/" target="_blank" rel="noopener noreferrer">markdown guide</a>
+            <a
+                href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+                target="_blank"
+                rel="noopener noreferrer"
+                >markdown guide (github flavored markdown)</a
+            >
         </header>
         <div id="notes">
             <Note v-for="note in noteList" :key="note" :Note="note" @explode="explode" @yeehaw="toggleSelect" @spotlight="notes.spotlight" />

@@ -44,6 +44,7 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
+marked.use({ gfm: true, breaks: true });
 // "i absolve you of your sins. you have been forgiven"
 import DOMPurify from "dompurify";
 
@@ -283,6 +284,7 @@ window.addEventListener("focus", () => {
 /* i'm 14 and this is */
 #output:deep(*) {
     margin-top: 0;
+    margin-bottom: 0;
 }
 
 /* temperature % */
