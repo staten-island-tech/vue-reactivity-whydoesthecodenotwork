@@ -182,6 +182,7 @@ async function tick() {
     if (note.temp > 0) {
         note.temp--;
         if (note.temp === 0) {
+            ticking = false;
             return;
         }
     }
