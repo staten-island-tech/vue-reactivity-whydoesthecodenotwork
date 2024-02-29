@@ -1,11 +1,16 @@
 <script setup>
 import Note from "../components/Note.vue";
+import Notification from "../components/Notification.vue";
 import { storeToRefs } from "pinia";
 import { useNotes } from "@/stores/notes.js";
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
+
+const pos = ref();
 
 const notes = useNotes();
 const { noteList, helpfulLength } = storeToRefs(notes);
+
+const notifications = ref([]);
 
 function explode(note) {
     // because explosions change index so you can't just save an index inside note object and be done with it
@@ -67,23 +72,56 @@ function storageAvailable(type) {
     }
 }
 
+function addNotification(msg) {
+    // make a "unique" key
+    notifications.value.push([msg, `${Date.now()};${notifications.value.length}`]);
+    clearNotification();
+}
+
+function clearNotification() {
+    setTimeout(() => {
+        notifications.value.splice(0, 1);
+    }, 5000);
+}
+
 function save() {
-    if (storageAvailable("localStorage")) {
-        localStorage.setItem("notes", JSON.stringify(noteList.value));
+    if (!storageAvailable("localStorage")) {
+        addNotification(`❌ your browser does NOT support saving notes :(`);
+        return;
     }
+    localStorage.setItem("notes", JSON.stringify(noteList.value));
+    addNotification(`saved ${noteList.value.length} note${noteList.value.length === 1 ? "" : "s"}`);
 }
 
 function load() {
-    if (storageAvailable("localStorage")) {
-        if (localStorage.getItem("notes")) {
-            // load saved notes
-            const loadNotes = Array.from(JSON.parse(localStorage.getItem("notes")));
-            notes.set(loadNotes);
-        }
+    if (!storageAvailable("localStorage")) {
+        addNotification(`❌ your browser does NOT support saving notes :(`);
+        return;
+    }
+    if (!localStorage.getItem("notes")) {
+        addNotification(`no saved notes found!`);
+        return;
+    }
+    // load saved notes
+    const loadNotes = Array.from(JSON.parse(localStorage.getItem("notes")));
+    notes.set(loadNotes);
+    addNotification(`loaded ${loadNotes.length} note${loadNotes.length === 1 ? "" : "s"}`);
+}
+
+function clear() {
+    if (window.confirm("do you REALLY want to clear all your notes?")) {
+        notes.set([]);
+        addNotification(`cleared notes`);
     }
 }
 
-onMounted(load);
+onMounted(() => {
+    load();
+    // for mobile, automatically disable note dragging (because it doesn't work on mobile)
+    if (navigator.maxTouchPoints > 1) {
+        pos.value = true;
+    }
+});
 </script>
 
 <template>
@@ -94,11 +132,13 @@ onMounted(load);
                 <h2>you have {{ helpfulLength }} note{{ helpfulLength > 1 ? "s" : "" }}</h2>
             </div>
             <h2 v-else>you have NO notes...</h2>
-            <div id="buttons">
+            <div id="inputs">
                 <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
                 <button @click="arrange">arrange notes</button>
                 <button @click="save">save notes</button>
                 <button @click="load">load notes</button>
+                <button @click="clear">clear notes</button>
+                <label>list notes? (touchscreen friendly)<input type="checkbox" v-model="pos" /></label>
             </div>
             <a
                 href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
@@ -108,7 +148,20 @@ onMounted(load);
             >
         </header>
         <div id="notes">
-            <Note v-for="note in noteList" :key="note" :Note="note" @explode="explode" @yeehaw="toggleSelect" @spotlight="notes.spotlight" />
+            <Note
+                v-for="note in noteList"
+                :key="note"
+                :Note="note"
+                @explode="explode"
+                @yeehaw="toggleSelect"
+                :Position="pos ? 'static' : 'absolute'"
+                @spotlight="notes.spotlight"
+            />
+        </div>
+        <div id="notifications">
+            <TransitionGroup name="notifications">
+                <Notification v-for="notification in notifications" :Message="notification[0]" :key="notification[1]"></Notification>
+            </TransitionGroup>
         </div>
     </div>
 </template>
@@ -140,8 +193,42 @@ h1 {
     align-self: stretch;
 }
 
-#buttons {
+#inputs {
     display: flex;
-    gap: 1rem;
+    justify-content: space-around;
+    gap: 1vw;
+}
+
+#notifications {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    margin-left: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.5rem;
+}
+
+.notifications-item {
+    transform-origin: top right;
+    position: relative;
+    display: block;
+}
+
+.notifications-move,
+.notifications-enter-active,
+.notifications-leave-active {
+    transition: all 0.2s ease-out;
+}
+
+.notifications-enter-from,
+.notifications-leave-to {
+    transform: translateX(10px);
+    opacity: 0;
+}
+
+.notifications-leave-active {
+    position: absolute;
 }
 </style>
