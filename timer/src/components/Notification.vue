@@ -12,9 +12,10 @@ const props = defineProps({
 output {
     border: solid black 2px;
     background-color: #fff;
-    width: max-content;
-    /* width: -moz-fit-content; */
     text-align: right;
-    padding: 5%;
+    /* can't use % here because when its pos is absolute (transition when leaving) bad things happen */
+    padding: 5px;
+    width: max-content;
+    height: max-content;
 }
 </style>

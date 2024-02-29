@@ -75,6 +75,10 @@ function storageAvailable(type) {
 function addNotification(msg) {
     // make a "unique" key
     notifications.value.push([msg, `${Date.now()};${notifications.value.length}`]);
+    if (notifications.value.length % 10 === 0) {
+        notifications.value.push(["Slow down!!!!", `${Date.now()};${notifications.value.length}`]);
+        clearNotification();
+    }
     clearNotification();
 }
 
@@ -180,7 +184,9 @@ onMounted(() => {
 
 h1,
 h2 {
-    margin: auto 0;
+    font-family: cursive;
+    text-align: center;
+    margin: 0 0.1rem;
 }
 
 h1 {
@@ -212,7 +218,7 @@ h1 {
 
 .notifications-item {
     transform-origin: top right;
-    position: relative;
+    position: static;
     display: block;
 }
 
@@ -229,6 +235,6 @@ h1 {
 }
 
 .notifications-leave-active {
-    position: absolute;
+    position: fixed;
 }
 </style>
