@@ -3,7 +3,7 @@
         class="card"
         ref="cardElement"
         :class="Note.focus ? 'active' : ''"
-        :style="{ left: Note.x + 'px', top: Note.y + 'px', zIndex: Note.z }"
+        :style="{ left: Note.x + 'px', top: Note.y + 'px', zIndex: Note.z, position: Position }"
         @mousedown="emits('spotlight', Note)"
         :id="'id' + Note.z"
     >
@@ -53,6 +53,7 @@ import DOMPurify from "dompurify";
 
 const props = defineProps({
     Note: "Object",
+    Position: "Boolean",
 });
 
 // explode: delete note, yeehaw: disable selecting (used when dragging)
@@ -199,7 +200,14 @@ onMounted(() => {
     new ResizeObserver(changeWidth).observe(textareaElement.value);
     new ResizeObserver(changeWidth).observe(mdElement.value);
     mdElement.value.innerHTML = DOMPurify.sanitize(marked.parse(textareaElement.value.value));
-    // hotter note will drain faster. can't change delay of settimeout so function that calls itself after delay it is
+    // don't spawn in the top left corner
+    if (!note.x) {
+        cardElement.value.style.position = "static";
+        const size = cardElement.value.getBoundingClientRect();
+        note.x = size.x;
+        note.y = size.y;
+        cardElement.value.style.position = props.Position;
+    }
     tick();
 });
 

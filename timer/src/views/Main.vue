@@ -4,6 +4,8 @@ import { storeToRefs } from "pinia";
 import { useNotes } from "@/stores/notes.js";
 import { ref, onMounted } from "vue";
 
+const pos = ref();
+
 const notes = useNotes();
 const { noteList, helpfulLength } = storeToRefs(notes);
 
@@ -83,7 +85,19 @@ function load() {
     }
 }
 
-onMounted(load);
+function clear() {
+    if (window.confirm("do you REALLY want to clear all your notes?")) {
+        notes.set([]);
+    }
+}
+
+onMounted(() => {
+    load();
+    // for mobile, automatically disable note dragging (because it doesn't work on mobile)
+    if (navigator.maxTouchPoints > 1) {
+        pos.value = true;
+    }
+});
 </script>
 
 <template>
@@ -94,11 +108,13 @@ onMounted(load);
                 <h2>you have {{ helpfulLength }} note{{ helpfulLength > 1 ? "s" : "" }}</h2>
             </div>
             <h2 v-else>you have NO notes...</h2>
-            <div id="buttons">
+            <div id="inputs">
                 <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
                 <button @click="arrange">arrange notes</button>
                 <button @click="save">save notes</button>
                 <button @click="load">load notes</button>
+                <button @click="clear">clear notes</button>
+                <label>list notes?<input type="checkbox" v-model="pos" /></label>
             </div>
             <a
                 href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
@@ -108,7 +124,15 @@ onMounted(load);
             >
         </header>
         <div id="notes">
-            <Note v-for="note in noteList" :key="note" :Note="note" @explode="explode" @yeehaw="toggleSelect" @spotlight="notes.spotlight" />
+            <Note
+                v-for="note in noteList"
+                :key="note"
+                :Note="note"
+                @explode="explode"
+                @yeehaw="toggleSelect"
+                :Position="pos ? 'static' : 'absolute'"
+                @spotlight="notes.spotlight"
+            />
         </div>
     </div>
 </template>
@@ -140,7 +164,7 @@ h1 {
     align-self: stretch;
 }
 
-#buttons {
+#inputs {
     display: flex;
     gap: 1rem;
 }
