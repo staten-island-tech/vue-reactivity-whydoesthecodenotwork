@@ -52,8 +52,8 @@ marked.use({ gfm: true, breaks: true });
 import DOMPurify from "dompurify";
 
 const props = defineProps({
-    Note: "Object",
-    Position: "Boolean",
+    Note: Object,
+    Position: String,
 });
 
 // explode: delete note, yeehaw: disable selecting (used when dragging)
