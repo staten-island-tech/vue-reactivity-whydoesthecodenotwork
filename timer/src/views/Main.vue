@@ -3,9 +3,10 @@ import Note from "../components/Note.vue";
 import Notification from "../components/Notification.vue";
 import { storeToRefs } from "pinia";
 import { useNotes } from "@/stores/notes.js";
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 
-const pos = ref();
+// if this is true, notes dragging will be disabled
+const pos = ref(false);
 
 const notes = useNotes();
 const { noteList, helpfulLength } = storeToRefs(notes);
@@ -93,8 +94,12 @@ function save() {
         addNotification(`❌ your browser does NOT support saving notes :(`);
         return;
     }
-    localStorage.setItem("notes", JSON.stringify(noteList.value));
-    addNotification(`saved ${noteList.value.length} note${noteList.value.length === 1 ? "" : "s"}`);
+    try {
+        localStorage.setItem("notes", JSON.stringify(noteList.value));
+        addNotification(`saved ${noteList.value.length} note${noteList.value.length === 1 ? "" : "s"}`);
+    } catch {
+        addNotification(`❌ save failed (size limit exceeded?)`);
+    }
 }
 
 function load() {
@@ -108,6 +113,25 @@ function load() {
     }
     // load saved notes
     const loadNotes = Array.from(JSON.parse(localStorage.getItem("notes")));
+
+    const defaultNote = { name: "a note", max: 300, z: 0, x: 0, y: 0, focus: false, content: "", temp: 0, width: 200, height: 100 };
+    loadNotes.forEach((note) => {
+        // set any missing properties
+        for (const [key, value] of Object.entries(defaultNote)) {
+            note[key] ??= value;
+        }
+        // remove any excess properties
+        const keys = Object.keys(note);
+        const defaultKeys = Object.keys(defaultNote);
+        if (keys.length !== defaultKeys.length) {
+            console.log("BLAU");
+            keys.forEach((key) => {
+                if (!Object.keys(defaultNote).includes(key)) {
+                    delete note[key];
+                }
+            });
+        }
+    });
     notes.set(loadNotes);
     addNotification(`loaded ${loadNotes.length} note${loadNotes.length === 1 ? "" : "s"}`);
 }
@@ -119,12 +143,22 @@ function clear() {
     }
 }
 
+// MISLEADING: there is only 1 setting
+function saveSettings() {
+    try {
+        localStorage.setItem("display", pos.value);
+    } catch {
+        console.log("you seriously don't have enough space to store a checkbox setting????");
+    }
+}
+
 onMounted(() => {
     load();
+    // load display setting
     // for mobile, automatically disable note dragging (because it doesn't work on mobile)
-    if (navigator.maxTouchPoints > 1) {
-        pos.value = true;
-    }
+    const display = localStorage.getItem("display");
+    pos.value = display ? display === "true" : navigator.maxTouchPoints > 1;
+    saveSettings();
 });
 </script>
 
@@ -142,7 +176,7 @@ onMounted(() => {
                 <button @click="save">save notes</button>
                 <button @click="load">load notes</button>
                 <button @click="clear">clear notes</button>
-                <label>list notes? (touchscreen friendly)<input type="checkbox" v-model="pos" /></label>
+                <label>list notes? (touchscreen friendly)<input type="checkbox" v-model="pos" @change="saveSettings" /></label>
             </div>
             <a
                 href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
@@ -202,22 +236,21 @@ h1 {
 #inputs {
     display: flex;
     justify-content: space-around;
-    gap: 1vw;
+    gap: 1ch;
+    margin: 0.5rem 0;
 }
 
 #notifications {
     position: fixed;
     top: 10px;
     right: 10px;
-    margin-left: 10px;
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     align-items: flex-end;
     gap: 0.5rem;
 }
 
 .notifications-item {
-    transform-origin: top right;
     position: static;
     display: block;
 }
@@ -225,16 +258,13 @@ h1 {
 .notifications-move,
 .notifications-enter-active,
 .notifications-leave-active {
-    transition: all 0.2s ease-out;
+    transition: 0.2s ease-out;
+    transition-property: transform, opacity, top;
 }
 
 .notifications-enter-from,
 .notifications-leave-to {
     transform: translateX(10px);
     opacity: 0;
-}
-
-.notifications-leave-active {
-    position: fixed;
 }
 </style>
