@@ -216,6 +216,11 @@ onMounted(() => {
     note.y = size.y;
     cardElement.value.style.position = props.Position;
   }
+  titleElement.value.addEventListener("paste", function (e) {
+    e.preventDefault();
+    var text = e.clipboardData.getData("text/plain");
+    document.execCommand("insertText", false, text);
+  });
   tick();
 });
 
