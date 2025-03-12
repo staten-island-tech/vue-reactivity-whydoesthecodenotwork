@@ -1,15 +1,15 @@
 <template>
-  <output>{{ Message }}</output>
+  <span>{{ message }}</span>
 </template>
 
-<script setup>
-const props = defineProps({
-  Message: String,
-});
+<script setup lang="ts">
+defineProps<{
+  message: string
+}>()
 </script>
 
 <style scoped>
-output {
+span {
   border: solid black 2px;
   background-color: #fff;
   text-align: right;

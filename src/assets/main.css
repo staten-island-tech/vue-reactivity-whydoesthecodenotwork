@@ -1,0 +1,9 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background: radial-gradient(circle at center, #000000 2px, transparent 0);
+  background-size: 80px 80px;
+  background-position: 0px 0px;
+}
