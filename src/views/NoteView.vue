@@ -12,12 +12,14 @@
         <button @click="save">save notes</button>
         <button @click="load">load notes</button>
         <button @click="clear">clear notes</button>
-        <label
-          >list notes? (touchscreen friendly)<input
-            type="checkbox"
-            v-model="pos"
-            @change="saveSettings"
-        /></label>
+        <label>
+          list notes? (touchscreen friendly)
+          <input type="checkbox" v-model="pos" @change="applySettings" />
+        </label>
+        <label>
+          dark mode?
+          <input type="checkbox" v-model="isDark" @change="applySettings" />
+        </label>
       </div>
       <a
         href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
@@ -61,6 +63,8 @@ import { ref, computed, onMounted } from 'vue'
  * if this is true, dragging notes will be disabled
  */
 const pos = ref(false)
+
+const isDark = ref(document.body.classList.contains('dark'))
 
 const notes = useNotesStore()
 const { noteList } = storeToRefs(notes)
@@ -130,13 +134,16 @@ function storageAvailable(type: string) {
 function addNotification(msg: string) {
   // make a "unique" key
   notifications.value.push([msg, `${Date.now()};${notifications.value.length}`])
+  clearNotification()
   if (notifications.value.length % 10 === 0) {
     notifications.value.push(['Slow down!!!!', `${Date.now()};${notifications.value.length}`])
     clearNotification()
   }
-  clearNotification()
 }
 
+/**
+ * waits 5s, then clears the oldest notification
+ */
 function clearNotification() {
   setTimeout(() => {
     notifications.value.splice(0, 1)
@@ -168,7 +175,8 @@ function load() {
   // load saved notes
   const loadNotes = Array.from(JSON.parse(localStorage.getItem('notes') || '[]')) as Note[]
 
-  const defaultNote = {
+  const defaultNote: Note = {
+    id: '-1',
     name: 'a note',
     max: 300,
     z: 0,
@@ -181,7 +189,7 @@ function load() {
     height: 100,
   }
 
-  loadNotes.forEach((note) => {
+  const cookedNotes = loadNotes.map((note, index) => {
     // set any missing properties
     const copy = Object.assign({}, defaultNote)
     note = Object.assign(copy, note)
@@ -191,11 +199,20 @@ function load() {
     const defaultKeys = new Set(Object.keys(defaultNote))
     if (keys.length !== defaultKeys.size) {
       keys.forEach((key) => {
-        if (defaultKeys.has(key)) delete note[key]
+        if (!defaultKeys.has(key)) delete note[key]
       })
     }
+
+    // handle notes that don't have keys
+    if (!note.id || note.id === '-1') {
+      console.log('WEE WOO WEE WOO', note.id)
+      note.id = `${Date.now()}${index}`
+    }
+
+    return note
   })
-  notes.set(loadNotes)
+
+  notes.set(cookedNotes)
   addNotification(`loaded ${loadNotes.length} note${loadNotes.length === 1 ? '' : 's'}`)
 }
 
@@ -206,12 +223,14 @@ function clear() {
   }
 }
 
-// MISLEADING: there is only 1 setting
-function saveSettings() {
+function applySettings() {
+  document.body.classList[isDark.value ? 'add' : 'remove']('dark')
+
   try {
     localStorage.setItem('display', String(pos.value))
+    localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
   } catch {
-    alert("you seriously don't have enough space to store a checkbox setting????")
+    alert("you seriously don't have enough space to store 2 checkbox settings????")
   }
 }
 
@@ -221,7 +240,7 @@ onMounted(() => {
   // for mobile, automatically disable note dragging (because it doesn't work on mobile)
   const display = localStorage.getItem('display')
   pos.value = display ? display === 'true' : navigator.maxTouchPoints > 1
-  saveSettings()
+  applySettings()
 })
 </script>
 
@@ -234,6 +253,11 @@ onMounted(() => {
   border-bottom: 2px solid black;
   padding-bottom: 1rem;
   margin-bottom: 1rem;
+}
+
+body.dark #main {
+  background-color: #000000dd;
+  border-bottom: 2px solid white;
 }
 
 h1,

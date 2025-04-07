@@ -7,3 +7,20 @@ body {
   background-size: 80px 80px;
   background-position: 0px 0px;
 }
+
+body.dark {
+  background: radial-gradient(circle at center, #ffffff 2px, black 0);
+  background-size: 80px 80px;
+  background-position: 0px 0px;
+
+  color: white;
+}
+
+body.dark a {
+  color: rgb(0, 153, 255);
+}
+body.dark button {
+  border-color: white;
+  background-color: black;
+  color: white;
+}

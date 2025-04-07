@@ -241,9 +241,19 @@ window.addEventListener('focus', () => {
   position: absolute;
 }
 
+body.dark .card {
+  background-color: rgb(37, 37, 37);
+  border: 2px solid rgb(255, 255, 255);
+}
+
 .card.active {
   /* IS THAT THE GRIM REAPER??? */
   box-shadow: 0 0 5px #666666;
+}
+
+body.dark .card.active {
+  /* IS THAT THE CHEERY FELLOW??? */
+  box-shadow: 0 0 5px #333333;
 }
 
 .card .title {
@@ -252,6 +262,11 @@ window.addEventListener('focus', () => {
   gap: 0.5ch;
   background-image: linear-gradient(90deg, #b4b4b4, #dddddd);
   justify-content: space-between;
+}
+
+body.dark .card .title {
+  border-bottom: 2px solid #ffffff;
+  background-image: linear-gradient(90deg, #393939, #636363);
 }
 
 .card .title h3 {
@@ -293,11 +308,17 @@ window.addEventListener('focus', () => {
   display: none;
   border: none;
   flex-grow: 1;
-  border-bottom: 1px dotted rgb(0, 0, 0);
+  border-bottom: 1px dotted black;
   min-width: 200px;
   min-height: 100px;
   resize: both;
   padding: 4px;
+}
+
+body.dark .card #content #left textarea {
+  border-bottom: 1px dotted white;
+  background-color: black;
+  color: white;
 }
 
 /* markdown output */
@@ -305,7 +326,7 @@ window.addEventListener('focus', () => {
   display: block;
   border: none;
   flex-grow: 1;
-  border-bottom: 1px dotted rgb(0, 0, 0);
+  border-bottom: 1px dotted black;
   /* cuts your hex code in half */
   background: #fff;
   min-width: 200px;
@@ -314,6 +335,12 @@ window.addEventListener('focus', () => {
   word-wrap: break-word;
   resize: both;
   padding: 4px;
+}
+
+body.dark .card #content #left #output {
+  border-color: white;
+  /* cuts your hex code in half */
+  background: #000;
 }
 
 /* i'm 14 and this is */
@@ -341,7 +368,11 @@ window.addEventListener('focus', () => {
   align-items: end;
   justify-content: center;
   /* padding: 1px; */
-  border-left: 1px solid rgb(0, 0, 0);
+  border-left: 1px solid black;
+}
+
+body.dark .card #content #temp .barBackground {
+  border-left: 1px solid white;
 }
 
 .card #content #temp .barBackground .bar {

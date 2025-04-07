@@ -18,4 +18,9 @@ span {
   height: max-content;
   z-index: 9999;
 }
+
+body.dark span {
+  border-color: white;
+  background-color: #000;
+}
 </style>
