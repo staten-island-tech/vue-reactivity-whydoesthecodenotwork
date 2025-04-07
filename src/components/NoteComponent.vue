@@ -233,7 +233,7 @@ window.addEventListener('focus', () => {
   width: min-content;
   height: min-content;
   background-color: rgb(211, 211, 211);
-  border: 2px solid rgb(0, 0, 0);
+  border: 2px solid black;
   border-radius: 5px;
   overflow: hidden;
   display: flex;
@@ -243,7 +243,7 @@ window.addEventListener('focus', () => {
 
 body.dark .card {
   background-color: rgb(37, 37, 37);
-  border: 2px solid rgb(255, 255, 255);
+  border: 2px solid white;
 }
 
 .card.active {
@@ -253,7 +253,7 @@ body.dark .card {
 
 body.dark .card.active {
   /* IS THAT THE CHEERY FELLOW??? */
-  box-shadow: 0 0 5px #333333;
+  box-shadow: 0 0 5px #ffffff;
 }
 
 .card .title {
@@ -266,7 +266,7 @@ body.dark .card.active {
 
 body.dark .card .title {
   border-bottom: 2px solid #ffffff;
-  background-image: linear-gradient(90deg, #393939, #636363);
+  background-image: linear-gradient(90deg, #393939, #444444);
 }
 
 .card .title h3 {
