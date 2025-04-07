@@ -225,6 +225,7 @@ function clear() {
 
 function applySettings() {
   document.body.classList[isDark.value ? 'add' : 'remove']('dark')
+  document.documentElement.style.setProperty('--background', isDark.value ? 'black' : 'white')
 
   try {
     localStorage.setItem('display', String(pos.value))
