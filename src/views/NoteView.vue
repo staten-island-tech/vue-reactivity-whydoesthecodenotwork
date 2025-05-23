@@ -10,7 +10,7 @@
         <button @click="notes.addNote(`note #${helpfulLength + 1}`, 300)">create a note</button>
         <button @click="arrange">arrange notes</button>
         <button @click="save">save notes</button>
-        <button @click="load">load notes</button>
+        <button @click="loadNotes">load notes</button>
         <button @click="clear">clear notes</button>
         <label>
           list notes? (touchscreen friendly)
@@ -19,6 +19,10 @@
         <label>
           dark mode?
           <input type="checkbox" v-model="isDark" @change="applySettings" />
+        </label>
+        <label>
+          heatsinks?
+          <input type="checkbox" v-model="heatsinks" @change="applySettings" />
         </label>
       </div>
       <a
@@ -37,6 +41,7 @@
         @yeehaw="toggleSelect"
         @spotlight="notes.spotlight"
         :key="note.id"
+        :heatsinks="heatsinks"
       />
     </div>
     <div id="notifications">
@@ -58,6 +63,8 @@ import ToastComponent from '@/components/ToastComponent.vue'
 import { storeToRefs } from 'pinia'
 import { useNotesStore } from '@/stores/notes.js'
 import { ref, computed, onMounted } from 'vue'
+
+const heatsinks = ref(false)
 
 /**
  * if this is true, dragging notes will be disabled
@@ -163,7 +170,7 @@ function save() {
   }
 }
 
-function load() {
+function loadNotes() {
   if (!storageAvailable('localStorage')) {
     addNotification(`❌ your browser does NOT support saving notes :(`)
     return
@@ -230,17 +237,22 @@ function applySettings() {
   try {
     localStorage.setItem('display', String(pos.value))
     localStorage.setItem('theme', isDark.value ? 'dark' : 'light')
+    localStorage.setItem('heatsinks', String(heatsinks.value))
   } catch {
-    alert("you seriously don't have enough space to store 2 checkbox settings????")
+    alert("you seriously don't have enough space to store 3 checkbox settings????")
   }
 }
 
 onMounted(() => {
-  load()
+  loadNotes()
   // load display setting
   // for mobile, automatically disable note dragging (because it doesn't work on mobile)
-  const display = localStorage.getItem('display')
-  pos.value = display ? display === 'true' : navigator.maxTouchPoints > 1
+  const savedDisplay = localStorage.getItem('display')
+  pos.value = savedDisplay ? savedDisplay === 'true' : navigator.maxTouchPoints > 1
+
+  const savedHeatsinks = localStorage.getItem('heatsinks')
+  heatsinks.value = savedHeatsinks === 'true'
+
   applySettings()
 })
 </script>

@@ -53,11 +53,20 @@
 import type { Note } from '@/types/note'
 import { onMounted, ref } from 'vue'
 import DOMPurify from 'dompurify'
-import { marked } from 'marked'
-marked.use({ gfm: true, breaks: true })
+import { marked, Renderer } from 'marked'
+const renderer = new Renderer()
+renderer.link = function (lonk) {
+  return (
+    `<a target="_blank" href="${lonk.href}">${lonk.text} HELP I'M TRAPPED IN THE LINK RENDERER` +
+    '</a>'
+  )
+}
+
+marked.use({ gfm: true, breaks: true, renderer })
+
 let ticking = false
 
-const props = defineProps<{ note: Note; position: 'static' | 'absolute' }>()
+const props = defineProps<{ note: Note; position: 'static' | 'absolute'; heatsinks: boolean }>()
 
 // explode: delete note, yeehaw: disable selecting (used when dragging)
 const emits = defineEmits(['explode', 'yeehaw', 'spotlight'])
@@ -137,14 +146,16 @@ async function endEdit() {
 
   const textareaSize = textareaElement.value.getBoundingClientRect()
   textareaElement.value.style.display = 'none'
-  mdElement.value.innerHTML = DOMPurify.sanitize(await marked.parse(textareaElement.value.value))
+  mdElement.value.innerHTML = DOMPurify.sanitize(await marked.parse(textareaElement.value.value), {
+    ADD_ATTR: ['target'],
+  })
   mdElement.value.style.width = textareaSize.width + 'px'
   mdElement.value.style.height = textareaSize.height + 'px'
   mdElement.value.style.display = 'block'
 }
 
 function heat() {
-  props.note.temp += 5
+  props.note.temp += props.heatsinks ? 0.5 : 5
   if (props.note.temp > props.note.max) return void die()
 
   if (!ticking) tick()
@@ -196,7 +207,9 @@ onMounted(async () => {
   mdElement.value.style.width = note.width + 'px'
   new ResizeObserver(changeWidth).observe(textareaElement.value)
   new ResizeObserver(changeWidth).observe(mdElement.value)
-  mdElement.value.innerHTML = DOMPurify.sanitize(await marked.parse(textareaElement.value.value))
+  mdElement.value.innerHTML = DOMPurify.sanitize(await marked.parse(textareaElement.value.value), {
+    ADD_ATTR: ['target'],
+  })
   // don't spawn in the top left corner
   if (!note.x) {
     cardElement.value.style.position = 'static'
