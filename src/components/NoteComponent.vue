@@ -56,10 +56,7 @@ import DOMPurify from 'dompurify'
 import { marked, Renderer } from 'marked'
 const renderer = new Renderer()
 renderer.link = function (lonk) {
-  return (
-    `<a target="_blank" href="${lonk.href}">${lonk.text} HELP I'M TRAPPED IN THE LINK RENDERER` +
-    '</a>'
-  )
+  return `<a target="_blank" href="${lonk.href}">${lonk.text}` + '</a>'
 }
 
 marked.use({ gfm: true, breaks: true, renderer })
