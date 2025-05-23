@@ -224,14 +224,10 @@ onMounted(async () => {
 })
 
 window.addEventListener('keydown', (event) => {
-  if (event.key === 'Control' && cursor.value !== 'grabbing') {
-    cursor.value = 'text'
-  }
+  if (event.key === 'Control' && cursor.value !== 'grabbing') cursor.value = 'text'
 })
 window.addEventListener('keyup', (event) => {
-  if (event.key === 'Control' && cursor.value !== 'grabbing') {
-    cursor.value = 'grab'
-  }
+  if (event.key === 'Control' && cursor.value !== 'grabbing') cursor.value = 'grab'
 })
 window.addEventListener('focus', () => {
   cursor.value = 'grab'
@@ -329,6 +325,7 @@ body.dark .card #content #left textarea {
   border-bottom: 1px dotted white;
   background-color: black;
   color: white;
+  scrollbar-color: #dddddd black;
 }
 
 /* markdown output */
@@ -351,6 +348,7 @@ body.dark .card #content #left #output {
   border-color: white;
   /* cuts your hex code in half */
   background: #000;
+  scrollbar-color: #dddddd black;
 }
 
 /* i'm 14 and this is */
